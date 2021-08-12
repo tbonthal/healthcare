@@ -33,10 +33,10 @@
 					<cloudHubDeployment>
 						<uri>https://anypoint.mulesoft.com</uri>
 						<muleVersion>4.3.0</muleVersion>
-						<username>tbonthal</username>
+						<username>theju20</username>
 						<password>Tejovikas@18</password>
 						<environment>Sandbox</environment>
-						<applicationName>HealthCare</applicationName>
+						<applicationName>Healthcare20</applicationName>
 						<workers>1</workers>
 						<workerType>Micro</workerType>
 						<objectStoreV2>true</objectStoreV2>
