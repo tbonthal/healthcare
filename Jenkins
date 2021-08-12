@@ -17,7 +17,7 @@ bat 'mvn clean test'
 
 stage('SonarQube Quality Check'){
 steps{
-bat 'mvn sonar:sonar -Dsonar.sources=src/ -Dsonar.host.url=http://localhost:9000 -Dsonar.login=56cc8874f157522fbef22c6cccafc806f151b149'
+bat 'mvn sonar:sonar -Dsonar.sources=src/ -Dsonar.host.url=http://localhost:9000 -Dsonar.login='0d5d7a79f852103dd4711a06add3fd6dccd6ded3'
 }
 }
 stage('Deploy Application in Mulesoft Cloudhub'){
