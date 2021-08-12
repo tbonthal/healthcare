@@ -1,0 +1,5 @@
+email:
+  host: "smtp.office365.com"
+  port: '587'
+  username: "tharani.bonthala@capgemini.com"
+  password: "Tejovikas@18"

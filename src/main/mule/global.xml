@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<http:listener-config name="fhir-r4-us-core-patient-api-httpListenerConfig1">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="fhir-r4-us-core-patient-api-config1" api="resource::016efb8b-0092-4e31-ad84-8d59164217b2:fhir-r4-us-observation-patient-api:1.0.0:raml:zip:fhir-r4-us-core-patient-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="268eec82-6512-4be5-8900-795cd227b2d9" >
+		<salesforce:basic-connection username="tharani.bonthala-anxd@force.com" password="Tejovikas@18" />
+	</salesforce:sfdc-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="1de09d5e-8410-450f-a490-c4fb5df9b5a9" file="config.yaml" />
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="7e69e6a3-52df-4ab5-81a1-79bb1563be0f" >
+		<email:smtp-connection host="${email.host}" port="${email.port}" user="${email.username}" password="${email.password}">
+			<email:properties >
+				<email:property key="mail.smtp.starttls.enable" value="true"/>
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+</mule>

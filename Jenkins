@@ -1,0 +1,29 @@
+pipeline
+{
+agent any
+stages{
+stage('Build Application'){
+steps{
+bat 'mvn clean install'
+}
+}
+
+stage('Mule Test Application'){
+steps{
+bat 'mvn clean test'
+}
+}
+
+
+stage('SonarQube Quality Check'){
+steps{
+bat 'mvn sonar:sonar -Dsonar.sources=src/ -Dsonar.host.url=http://localhost:9000 -Dsonar.login=56cc8874f157522fbef22c6cccafc806f151b149'
+}
+}
+stage('Deploy Application in Mulesoft Cloudhub'){
+steps{
+bat 'mvn package deploy -DmuleDeploy'
+}
+}
+}
+}

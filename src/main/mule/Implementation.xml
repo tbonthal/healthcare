@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<flow name="upsert" doc:id="3b646637-f56d-43d5-b654-48805d76f5ef" >
+		<http:listener doc:name="Listener" doc:id="46f6693c-8009-4457-9da8-f375e05654a6" config-ref="fhir-r4-us-core-patient-api-httpListenerConfig1" path="/health" allowedMethods="POST,PUT" />
+		<ee:transform doc:name="Transform Message" doc:id="a45dd4d0-2d66-4527-94bf-4f3a75f9dae0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+
+
+[{
+"Name": (payload.name filter((item,index)-> item.use=="usual")).given[0],
+"BillingStreet": payload.address.district[0],
+"BillingCity": payload.address.city[0],
+"BillingState": payload.address.state[0],
+"BillingPostalCode": payload.address.postalCode[0],
+"health_ID__c": payload.id,
+"Phone": (payload.telecom filter((it,in)-> it.use=="mobile")).value[0],
+"Description": payload.gender
+}]
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:upsert objectType="Account" externalIdFieldName="health_ID__c" doc:id="7af2f5dd-b468-457d-b0c8-cd0721d07fa0" config-ref="Salesforce_Config" doc:name="Upsert" />
+		<ee:transform doc:name="Transform Message" doc:id="d26f8201-3300-4fe4-86e8-00b0e7dadb63" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="738e747e-e420-454c-bae9-92d53d69dfdf" message="completed" />
+	</flow>
+	<flow name="GETID" doc:id="68132ce6-e6c3-4571-8029-26a97dc4e595" >
+		<http:listener doc:name="Listener" doc:id="583d54d0-4338-4793-bf93-4a96e080b64d" config-ref="fhir-r4-us-core-patient-api-httpListenerConfig1" path="/Getaccount"/>
+		<salesforce:query doc:name="Query" doc:id="62ff53e0-91ee-4e0d-b52f-6bada8452053" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Name, Description, BillingAddress, BillingCountry,BillingPostalCode, BillingState, Phone, health_ID__c From Account]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="f253e68c-adbe-4568-9b1b-e76acfd44b9e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="SearchByName" doc:id="e9f701af-5c57-4836-b29f-3e9236a96755" >
+		<http:listener doc:name="Listener" doc:id="877b721c-06d0-4b1e-a932-fd142bf4861e" config-ref="fhir-r4-us-core-patient-api-httpListenerConfig1" path="/search" allowedMethods="GET" />
+		<salesforce:search doc:name="Search" doc:id="28ba4fc1-16ff-4184-ba81-564ee72c489a" config-ref="Salesforce_Config" >
+			<salesforce:search-string ><![CDATA[FIND {:searchQuery}
+IN Name FIELDS
+RETURNING Account (Id, Name, Description, BillingAddress, BillingCountry,BillingPostalCode, BillingState, Phone, health_ID__c) ]]></salesforce:search-string>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	searchQuery : attributes.queryParams.query
+}]]]></salesforce:parameters>
+		</salesforce:search>
+		<ee:transform doc:name="Transform Message" doc:id="b71a4495-b124-4c8c-917d-1406da4459a6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="ImplementationFlow" doc:id="b0178cab-4af8-4ca4-b350-fffc008d53f7" >
+		<http:listener doc:name="Listener" doc:id="3535707c-c29b-4843-b934-10b635a5443b" config-ref="fhir-r4-us-core-patient-api-httpListenerConfig1" path="/email"/>
+		<salesforce:query doc:name="Query" doc:id="c254d2c4-7dfd-4347-bf48-f984315390be" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Name, Description, BillingAddress, BillingCountry,BillingPostalCode, BillingState, Phone, health_ID__c From Account 
+where health_ID__c=':byidAcc']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	byidAcc : attributes.queryParams.byidAcc
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="d7e744aa-7b45-4091-a9f4-818c1c171962" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="b941a1d9-34b1-472e-882c-f48836c0bffc" >
+			<when expression="#[isEmpty(payload)]">
+				<email:send doc:name="Send" doc:id="f724b03a-07fd-4012-a025-b7fd9d12f085" config-ref="Email_SMTP" fromAddress="tharani.bonthala@capgemini.com" subject='#["patient not found "]'>
+					<email:to-addresses >
+						<email:to-address value="tharani.bonthala@capgemini.com" />
+					</email:to-addresses>
+					<email:body >
+						<email:content ><![CDATA[#["patient records are not found in salesforce"]]]></email:content>
+					</email:body>
+				</email:send>
+				<logger level="INFO" doc:name="Logger" doc:id="9de2c1a4-66c6-4cef-92b7-9dbed7592296" message="emailNotification"/>
+			</when>
+			<otherwise >
+				<email:send doc:name="Send" doc:id="cd70b188-0efa-4a7c-bf26-048ff397f907" config-ref="Email_SMTP" fromAddress="tharani.bonthala@capgemini.com" subject='#["patient  found "]'>
+					<email:to-addresses >
+						<email:to-address value="tharani.bonthala@capgemini.com" />
+					</email:to-addresses>
+				</email:send>
+				<logger level="INFO" doc:name="Logger" doc:id="5b915e86-14ba-4b46-a423-0219ed7643b6" message="completedemail"/>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
