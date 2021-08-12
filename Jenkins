@@ -1,29 +1,24 @@
 pipeline
-{
-agent any
-stages{
-stage('Build Application'){
-steps{
-bat 'mvn clean install'
-}
-}
-
-stage('Mule Test Application'){
-steps{
-bat 'mvn clean test'
-}
-}
-
-
-stage('SonarQube Quality Check'){
-steps{
-bat 'mvn sonar:sonar -Dsonar.sources=src/ -Dsonar.host.url=http://localhost:9000 -Dsonar.login=0d5d7a79f852103dd4711a06add3fd6dccd6ded3'
-}
-}
-stage('Deploy Application in Mulesoft Cloudhub'){
-steps{
-bat 'mvn package deploy -DmuleDeploy'
-}
-}
-}
+ {
+  agent any
+  stages{
+   
+   stage('Build Application'){
+   steps{
+   bat 'mvn clean install'
+   }
+   }
+   
+   
+   stage('SonarQube Quality Check'){
+   steps{
+   bat 'mvn sonar:sonar -Dsonar.sources=src/ -Dsonar.host.url=http://localhost:9000 -Dsonar.login=0d5d7a79f852103dd4711a06add3fd6dccd6ded3'
+   }
+   }
+   stage('Deploy Application in Mulesoft Cloudhub'){
+   steps{
+   bat 'mvn package deploy -DmuleDeploy'
+   }  
+   }
+  }
 }
